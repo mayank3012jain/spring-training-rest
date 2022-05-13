@@ -20,6 +20,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.cisco.training.dao.ReviewsRepository;
 import com.cisco.training.domain.Review;
+import com.cisco.training.web.remote.ProductMicroService;
 
 @RestController
 public class ReviewsController {
@@ -30,8 +31,11 @@ public class ReviewsController {
 //	@Value("${product.url}")
 //	String productServiceBaseUrl;
 	
+//	@Autowired
+//	DiscoveryClient dc;
+	
 	@Autowired
-	DiscoveryClient dc;
+	ProductMicroService productService;
   
   
 	@GetMapping("/reviews") // /reviews?pid=1
@@ -43,11 +47,12 @@ public class ReviewsController {
 	public ResponseEntity addReview(@RequestBody Review review) {
 		RestTemplate rt = new RestTemplate();
 		
-		List<ServiceInstance> instances = dc.getInstances("product-app");
-		String productServiceBaseUrl = instances.get(0).getUri().toString();
+//		List<ServiceInstance> instances = dc.getInstances("product-app");
+//		String productServiceBaseUrl = instances.get(0).getUri().toString();
 		try {
 			System.out.println("MJ-----");
-			rt.getForObject(productServiceBaseUrl+"/products/{id}", String.class, review.getPid());
+//			rt.getForObject(productServiceBaseUrl+"/products/{id}", String.class, review.getPid());
+			String json = productService.getProductById(review.getPid());
 			Review saved = dao.save(review);
 			HttpHeaders headers = new HttpHeaders();
 			headers.setLocation(URI.create("/reviews/"+saved.getId()));
