@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +27,11 @@ public class ReviewsController {
 	@Autowired
 	ReviewsRepository dao;
 
-	@Value("${product.url}")
-	String productServiceBaseUrl;
+//	@Value("${product.url}")
+//	String productServiceBaseUrl;
+	
+	@Autowired
+	DiscoveryClient dc;
   
   
 	@GetMapping("/reviews") // /reviews?pid=1
@@ -37,6 +42,9 @@ public class ReviewsController {
 	@PostMapping("/reviews")
 	public ResponseEntity addReview(@RequestBody Review review) {
 		RestTemplate rt = new RestTemplate();
+		
+		List<ServiceInstance> instances = dc.getInstances("product-app");
+		String productServiceBaseUrl = instances.get(0).getUri().toString();
 		try {
 			System.out.println("MJ-----");
 			rt.getForObject(productServiceBaseUrl+"/products/{id}", String.class, review.getPid());
